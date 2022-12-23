@@ -1,0 +1,265 @@
+
+define([
+  "knockout",
+  "appController",
+  "ojs/ojmodule-element-utils", 
+  "accUtils",
+  "ojs/ojcontext",
+  "../dataBase",
+  "ojs/ojarraydataprovider",
+  "ojs/ojknockout-keyset",
+  "ojs/ojkeyset",
+  "ojs/ojasyncvalidator-regexp",
+  "ojs/ojknockout",
+  "ojs/ojinputtext",
+  "ojs/ojinputnumber",
+  "ojs/ojlabel",
+  "ojs/ojbutton",
+  "ojs/ojformlayout",
+  "ojs/ojmessaging",
+  "ojs/ojlistview",
+  "ojs/ojlistitemlayout",
+  "ojs/ojdialog",
+  "ojs/ojselectsingle",
+  "ojs/ojswitch"
+], function (ko, app, moduleUtils, accUtils, Context, DataBase, ArrayDataProvider, keySet, KeySetImpl, AsyncRegExpValidator) {
+  function ControladoraViewModel() {
+    var self = this;
+
+    // Wait until header show up to resolve
+    var resolve = Context.getPageContext().getBusyContext().addBusyState({description: "wait for header"});
+    // Header Config
+    self.headerConfig = ko.observable({'view':[], 'viewModel':null});
+    moduleUtils.createView({'viewPath':'views/header.html'}).then(function(view) {
+      self.headerConfig({'view':view, 'viewModel': app.getHeaderModel()});
+      resolve();
+    })
+
+    self.currentIndex;
+
+    self.controllerRegistration = {
+      idControladora : ko.observable(),
+      descricaoControladora : ko.observable(''),
+      IP : ko.observable(''),
+      horaInicioTurno1 : ko.observable(),
+      horaFimTurno1 : ko.observable(),
+      horaInicioTurno2 : ko.observable(),
+      horaFimTurno2 : ko.observable(),
+      exibeDashBoard : ko.observable(true),
+    }
+    
+    self.dataController = ko.observableArray([]);
+    self.showListView = ko.observable(false);
+
+    self.queryController = async function () {
+      
+      DataBase.queryController('SELECT * FROM CONTROLADORAS').then( (result) => {
+
+        self.dataController(result);
+        self.showListView(true);
+        
+        var items = self.dataController();
+        var array = items.map(function(e) {
+          return e.idControladora;
+        });
+        self.lastItemId = Math.max.apply(null, array);
+        self.dataProviderController = new ArrayDataProvider(self.dataController, { keyAttributes: "idControladora" } );
+
+        return result.filter(result => result.exibeDashBoard == true);
+      })
+      .then ((data) => {
+         setListItemSelected(data[0].value);
+      })
+    }
+    self.dataProviderController = new ArrayDataProvider(self.dataController, { keyAttributes: "idControladora" } );
+    
+    self.selectedItems = new keySet.ObservableKeySet();
+    
+    function setListItemSelected (key) {
+      //document.getElementById("listview").getProperty("selection");
+      //document.getElementById("listview").getProperty("selected");
+      //document.getElementById("listview").getProperty("selected._keys");
+      
+      // Forma 1
+      //document.getElementById("listview").selection = [18];
+      //document.getElementById("listview").setProperty("selection", [17]);
+
+      // Forma 2
+      let keySI = new Set();
+      keySI.add(key);
+      keySI = new KeySetImpl.KeySetImpl(keySI);
+      document.getElementById("listview").setProperty("selected", keySI);
+    };
+    
+    self.isTextEmpty = ko.observable(true);
+    
+    // usar parametro disabled="[[isTextAndSelecionFilled]]" no oj-button
+    self.isTextAndSelecionFilled = ko.computed(function(){
+      return  ( !self.isTextEmpty() && !self.isSelectionEmpty()) || self.isTextEmpty();
+    }, self);
+
+    self.isSelectionEmpty = ko.computed(function () {
+      return self.selectedItems().values().size === 0;
+    }, self);
+    self.isTextOrSelectionEmpty = ko.computed(function () {
+      return self.isTextEmpty() || self.isSelectionEmpty();
+    }, self);
+  
+    self.addItem = function () {
+      var itemToAdd = self.controllerRegistration.IP();
+
+      const controller = {
+        idControladora : self.controllerRegistration.idControladora() || 1,
+        descricaoControladora : self.controllerRegistration.descricaoControladora(),
+        IP : self.controllerRegistration.IP(), 
+        horaInicioTurno1 : self.controllerRegistration.horaInicioTurno1(), 
+        horaFimTurno1 : self.controllerRegistration.horaFimTurno1(), 
+        horaInicioTurno2 : self.controllerRegistration.horaInicioTurno2(), 
+        horaFimTurno2 : self.controllerRegistration.horaFimTurno2(),
+        exibeDashBoard : self.controllerRegistration.exibeDashBoard()
+      }
+
+      if ((itemToAdd !== '')) {
+        DataBase.insertController(controller);
+        self.showListView(false);
+        self.queryController();
+        self.controllerRegistration.descricaoControladora();
+        self.controllerRegistration.IP();
+        self.controllerRegistration.horaInicioTurno1();
+        self.controllerRegistration.horaFimTurno1();
+        self.controllerRegistration.horaInicioTurno2();
+        self.controllerRegistration.horaFimTurno2();
+      }
+    }.bind(self);
+  
+    self.updateSelected = async function () {
+
+      var itemToReplace = self.dataController()[self.currentIndex];
+      
+      const controller = { 
+        value: itemToReplace.value, 
+        label: self.controllerRegistration.descricaoControladora(), 
+        idControladora: itemToReplace.idControladora, 
+        descricaoControladora : self.controllerRegistration.descricaoControladora(),
+        IP : self.controllerRegistration.IP(), 
+        horaInicioTurno1 : self.controllerRegistration.horaInicioTurno1(), 
+        horaFimTurno1 : self.controllerRegistration.horaFimTurno1(), 
+        horaInicioTurno2 : self.controllerRegistration.horaInicioTurno2(), 
+        horaFimTurno2 : self.controllerRegistration.horaFimTurno2(),
+        exibeDashBoard : self.controllerRegistration.exibeDashBoard()
+      }
+
+      //self.dataController.splice(self.currentIndex, 1, controller);
+      
+      DataBase.updateController(controller);
+      self.queryController();
+    
+    }.bind(self);
+  
+    self.close = function(event) {
+      document.getElementById("modalDialogExcluirCadastro").close();
+    }
+    self.open = function(event) {
+      document.getElementById("modalDialogExcluirCadastro").open();
+    }
+
+    self.removeSelected = function () {
+      const items = self.dataController();
+      var itemToRemove = self.dataController()[self.currentIndex];
+      ControllerLeft = items.filter( (config) => {
+        return config.label !== self.controllerRegistration.IP();
+      })
+      DataBase.deleteController(itemToRemove.idControladora);
+      self.showListView(false);
+      self.queryController();
+      self.controllerRegistration.descricaoControladora('');
+      self.controllerRegistration.IP('');
+      self.controllerRegistration.horaInicioTurno1();
+      self.controllerRegistration.horaFimTurno1();
+      self.controllerRegistration.horaInicioTurno2();
+      self.controllerRegistration.horaFimTurno2();
+      self.close();
+    }.bind(self);
+ 
+    
+    // usar parametro on-current-item-changed="[[handleCurrentItemChanged]]" no oj-list-view
+    self.handleCurrentItemChanged = function (event) {
+      var key = event.detail.value;
+      populateFields(key);
+    }.bind(self);
+
+    // usar parametro on-selected-changed="[[handleSelectedChanged]]" no oj-list-view
+    self.handleSelectedChanged = function (event) {
+      var key = Array.from(event.detail.value.values())[0];
+      populateFields(key);
+    }.bind(self);
+
+    populateFields = (key) => {
+      var items = self.dataController();
+      var indice = items.map(function(e) {
+        return e.idControladora;
+      }).indexOf(key);
+
+      for (var i = 0; i < items.length; i++) { 
+        if (i === indice) {
+          self.currentIndex = i;
+          self.controllerRegistration.idControladora(items[i].idControladora);
+          self.controllerRegistration.descricaoControladora(items[i].descricaoControladora);
+          self.controllerRegistration.IP(items[i].IP);
+          self.controllerRegistration.horaInicioTurno1(items[i].horaInicioTurno1);
+          self.controllerRegistration.horaFimTurno1(items[i].horaFimTurno1);
+          self.controllerRegistration.horaInicioTurno2(items[i].horaInicioTurno2);
+          self.controllerRegistration.horaFimTurno2(items[i].horaFimTurno2);
+          self.controllerRegistration.exibeDashBoard(items[i].exibeDashBoard);
+          break;
+        }
+      }
+    }
+
+    self.selectedIds = ko.observable();
+    
+    self.handleRawValueChanged = function (event) {
+      var value = event.detail.value;
+      self.isTextEmpty(value.trim().length === 0);
+    }.bind(self);
+
+    // usar parametro on-raw-value-changed="[[handleRawValueChangedFormatIP]] no oj-input-text
+    self.handleRawValueChangedFormatIP = function (event) {
+      var value = event.detail.value;
+      value = value.replace(/^(\d{3})(\d{3})(\d{3})(\d{3})/, "$1.$2.$3.$4");
+      self.controllerRegistration.IP(value);
+    }.bind(self);
+    
+    let options = new Object();
+
+    /* options = {
+      pattern: "[a-zA-Z0-9:/.-]+",
+      hint: "Informe um valor de IP válido",
+      messageDetail: "Informe um valor de IP válido",
+    } */
+    
+    options = {
+      pattern: "\\d{3}\\.{1}\\d{3}\\.{1}\\d{1,3}\\.{1}\\d{1,3}",
+      hint: "Informe um valor de IP válido",
+      messageDetail: "Informe um valor de IP válido",
+    }
+
+    self.validators = [
+      new AsyncRegExpValidator(options)
+    ];
+    
+    self.connected = function () {
+      accUtils.announce("About page loaded.", "assertive");
+      document.title = "About";
+      //DataBase.dropDataBase();
+      DataBase.createDataBase();
+      self.queryController();
+    };
+
+    self.disconnected = function () {};
+
+    self.transitionCompleted = function () {};
+  }
+
+  return ControladoraViewModel;
+});

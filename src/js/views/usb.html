@@ -1,0 +1,32 @@
+<!--
+ Copyright (c) 2014, 2020, Oracle and/or its affiliates.
+ Licensed under The Universal Permissive License (UPL), Version 1.0
+ as shown at https://oss.oracle.com/licenses/upl/
+ -->
+<div class="oj-hybrid-applayout-page">
+  <div class="oj-applayout-fixed-top">
+      <!--
+       ** Oracle JET V9.2.0 hybrid mobile application header pattern.
+       ** Please see the Oracle JET Cookbook App Shell: Hybrid Mobile demos for
+       ** more information on how to use this pattern.
+    -->
+    <header role="banner" class="oj-hybrid-applayout-header">
+      <oj-module config="[[headerConfig]]"></oj-module>
+    </header>
+  </div>
+  <!-- This is where your main page content will be loaded -->
+  <div class="oj-applayout-content">
+    <div role="main" class="oj-hybrid-applayout-content">
+      <div class="oj-hybrid-padding">
+        <h1>Profile Content Area</h1>
+        <oj-button 
+          id="loginButton" 
+          style="width: 92%; margin: 0% 4% 2% 4%; background-color: green; border-radius: 5px;"
+          class="oj-button-lg" 
+          on-oj-action="[[comunicaUSB]]" 
+          >Testar USB 1
+        </oj-button>
+      </div>
+    </div>
+  </div>
+</div>

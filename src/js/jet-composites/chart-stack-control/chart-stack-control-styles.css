@@ -1,0 +1,17 @@
+/* This file is where css selectors for the component go.
+   There will be hard coded properties and properties controlled by variables, for example
+
+   chart-stack-control .chart-stack-control-value-text {
+   color: var(--chart-stack-control-value-text-color);
+   display: inline-block;
+	 }
+*/
+
+chart-stack-control:not(.oj-complete){
+  visibility: hidden;
+}
+
+/* chart-stack-control{
+	min-height: 50px;
+	width: 50px;
+} */

@@ -1,0 +1,25 @@
+/jet_components
+/node_modules
+/bower_components
+/dist
+/web
+/staged-themes
+/themes
+/jaftmp@
+
+/hybrid/node_modules
+/hybrid/platforms
+/hybrid/www/*
+
+/apk
+/bkp
+/util
+/App-Contador-Pessoas (instaladores e manuais)
+/icons
+
+!hybrid/plugins
+hybrid/plugins/*
+!hybrid/plugins/fetch.json
+
+.DS_Store
+Thumbs.db
