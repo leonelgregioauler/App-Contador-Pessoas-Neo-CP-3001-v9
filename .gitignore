@@ -16,6 +16,7 @@
 /util
 /App-Contador-Pessoas (instaladores e manuais)
 /icons
+/splash-screen
 
 !hybrid/plugins
 hybrid/plugins/*

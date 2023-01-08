@@ -17,7 +17,8 @@
     "cordova-plugin-device": "*",
     "cordova-plugin-inappbrowser": "*",
     "cordova-plugin-network-information": "1",
-    "cordova-plugin-dialogs": "1"
+    "cordova-plugin-dialogs": "1",
+    "cordova-plugin-splashscreen": "*"
   },
   "cordova": {
     "plugins": {
@@ -25,7 +26,8 @@
       "cordova-plugin-device": {},
       "cordova-plugin-inappbrowser": {},
       "cordova-plugin-network-information": {},
-      "cordova-plugin-dialogs": {}
+      "cordova-plugin-dialogs": {},
+      "cordova-plugin-splashscreen": {}
     },
     "platforms": [
       "android",
