@@ -54,10 +54,8 @@ define(['knockout',
       self.identifyScreenSize = Dash.config.identifyScreenSize;
       
       self.restartButton = () => {
-        onDeviceReady();
         self.indeterminate(-1);
         self.progressValue(0);
-        self.queryController();
         self.createInterval();
       };
       
@@ -70,7 +68,7 @@ define(['knockout',
       self.colorMonth = Dash.config.colorMonth;
       self.dataSourceDataMonth = Dash.config.dataSourceDataMonth;
       
-      onDeviceReady = Dash.config.onDeviceReady;
+      getNetworkInformation = Dash.config.getNetworkInformation;
 
       const controller = Dash.config.controller;
       
@@ -116,10 +114,52 @@ define(['knockout',
             self.total.totalDay(parseInt(totalDay.v));
             self.total.dayMonthYear(fullDate);
           })
+          .then( () => {
+
+            endpointData = async () => {
+              (day <= 12) ? await Promise.all([endpoint1()]) : null;
+              (day >= 13) && (day <= 24) ? await Promise.all([endpoint1(), endpoint2()]) : null;
+              (day >= 25) ? await Promise.all([endpoint1(), endpoint2(), endpoint3()]) : null;
+            }
+  
+            endpointData().then( () => {
+  
+              let orderData = controller.dataMonth().sort( (a, b) => {
+                return a.d - b.d;
+              })
+  
+              historicMonth = orderData.slice(0, day);
+  
+              const details = historicMonth.map((item) => {
+                return {
+                  id: item.d,
+                  series: monthYear + ' - ' + self.total.totalDay() + ' visitas.',
+                  quarter: item.d,
+                  group: 'Contador',
+                  value: parseInt(item.v)
+                }
+              });
+  
+              if (self.dataSourceDataMonth.length == 0) {
+                self.dataSourceDataMonth.push([]);
+                self.dataSourceDataMonth[idx].histMonth = new ArrayDataProvider(details); 
+              }
+  
+              self.showGraphicMonth(false);
+  
+              if ( (resultControl.length - 1) == idx) {
+                self.showGraphicMonth(true);
+                self.showLoadingIndicator(false);
+                self.showSlider(true);
+              }
+            })
+          })
           .catch( (error) => {
-            clearInterval(self.intervalMonthly);
+            clearInterval(Dash.config.intervalMonthly());
+            Dash.config.intervalMonthly('');
             self.indeterminate(0);
             self.progressValue(Math.floor(Math.random() * 100));
+            getNetworkInformation(error);
           })
 
           endpoint1 = async () => {
@@ -145,73 +185,38 @@ define(['knockout',
               })
             })
           }
-
-          endpointData = async () => {
-            (day <= 12) ? await Promise.all([endpoint1()]) : null;
-            (day >= 13) && (day <= 24) ? await Promise.all([endpoint1(), endpoint2()]) : null;
-            (day >= 25) ? await Promise.all([endpoint1(), endpoint2(), endpoint3()]) : null;
-          }
-
-          endpointData().then( () => {
-
-            let orderData = controller.dataMonth().sort( (a, b) => {
-              return a.d - b.d;
-            })
-
-            historicMonth = orderData.slice(0, day);
-
-            const details = historicMonth.map((item) => {
-              return {
-                id: item.d,
-                series: monthYear + ' - ' + self.total.totalDay() + ' visitas.',
-                quarter: item.d,
-                group: 'Contador',
-                value: parseInt(item.v)
-              }
-            });
-
-            if (self.dataSourceDataMonth.length == 0) {
-              self.dataSourceDataMonth.push([]);
-              self.dataSourceDataMonth[idx].histMonth = new ArrayDataProvider(details); 
-            }
-
-            self.showGraphicMonth(false);
-
-            if ( (resultControl.length - 1) == idx) {
-              self.showGraphicMonth(true);
-              self.showLoadingIndicator(false);
-              self.showSlider(true);
-            }
-          })
         })
       }
 
       self.createInterval = function () {
 
-        self.intervalMonthly = setInterval( () => {
+        if (!Dash.config.intervalMonthly()) {
 
-          if (params.router._activeState.path === 'dashboard-mensal') {
+          const intervalMonthly = setInterval( () => {
 
-            self.showLoadingIndicator(true)
-            
-            controller.dataTotal().splice(-controller.dataTotal().length);
-            controller.dataMonth().splice(-controller.dataMonth().length);
-            
-            if (self.dataSourceDataMonth) {
-              self.dataSourceDataMonth.splice(-self.dataSourceDataMonth.length);
+            if (params.router._activeState.path === 'dashboard-mensal') {
+
+              self.showLoadingIndicator(true);
+              
+              controller.dataTotal().splice(-controller.dataTotal().length);
+              controller.dataMonth().splice(-controller.dataMonth().length);
+              
+              if (self.dataSourceDataMonth) {
+                self.dataSourceDataMonth.splice(-self.dataSourceDataMonth.length);
+              }
+  
+              self.queryController();
+  
             }
+          }, 30000);
 
-            self.queryController();
-
-          }
-        }, 30000);
+          Dash.config.intervalMonthly(intervalMonthly);
+        }
       }
 
       self.connected = function() {
         accUtils.announce('Dashboard page loaded.');
         document.title = "Dashboard";
-
-        onDeviceReady();
 
         window.addEventListener('orientationchange', self.identifyScreenSize);
 

@@ -54,10 +54,8 @@ define(['knockout',
       self.identifyScreenSize = Dash.config.identifyScreenSize;
       
       self.restartButton = () => {
-        onDeviceReady();
         self.indeterminate(-1);
         self.progressValue(0);
-        self.queryController();
         self.createInterval();
       };
       
@@ -72,7 +70,7 @@ define(['knockout',
       self.colorOfficeHourAfternoon = Dash.config.colorOfficeHourAfternoon;
       self.dataSourceDataHour = Dash.config.dataSourceDataHour;
 
-      onDeviceReady = Dash.config.onDeviceReady;
+      getNetworkInformation = Dash.config.getNetworkInformation;
 
       const controller = Dash.config.controller;
       
@@ -114,10 +112,64 @@ define(['knockout',
             self.total.totalDay(parseInt(totalDay.v));
             self.total.dayMonthYear(fullDate);
           })
+          .then( () => {
+            
+            endpointData = async () => {
+              (hour <= 11) ? await Promise.all([endpoint4()]) : null;
+              (hour >= 12) ? await Promise.all([endpoint4(), endpoint5()]) : null;
+            }
+            
+            endpointData().then( () => {
+            
+              let orderData = controller.dataHour().sort( (a, b) => {
+                return a.h - b.h;
+              })
+            
+              historicOfficeHourMorning = orderData.slice(itemControl.horaInicioTurno1, itemControl.horaFimTurno1 + 1);
+              historicOfficeHourAfternoon = orderData.slice(itemControl.horaInicioTurno2, itemControl.horaFimTurno2 + 1);
+            
+              const detailsMorning = historicOfficeHourMorning.map((item) => {
+                return {
+                  id: item.h,
+                  series: 'Turno 1',
+                  quarter: item.h,
+                  group: 'Contador',
+                  value: parseInt(item.v)
+                }
+              });
+              
+              const detailsAfternoon = historicOfficeHourAfternoon.map((item) => {
+                return {
+                  id: item.h,
+                  series: 'Turno 2',
+                  quarter: item.h,
+                  group: 'Contador',
+                  value: parseInt(item.v)
+                }
+              });
+              
+              const detailsMorningAfternoon = [...detailsMorning, ...detailsAfternoon];
+              
+              if (self.dataSourceDataHour.length == 0) {
+                self.dataSourceDataHour.push([]);
+                self.dataSourceDataHour[idx].histHour = new ArrayDataProvider(detailsMorningAfternoon); 
+              }
+              
+              self.showGraphicHour(false);
+              
+              if ( (resultControl.length - 1) == idx) {
+                self.showGraphicHour(true);
+                self.showLoadingIndicator(false);
+                self.showSlider(true);
+              }
+            })
+          })
           .catch( (error) => {
-            clearInterval(self.intervalDiary);
+            clearInterval(Dash.config.intervalDiary());
+            Dash.config.intervalDiary('');
             self.indeterminate(0);
             self.progressValue(Math.floor(Math.random() * 100));
+            getNetworkInformation(error);
           })
           
           endpoint4 = async () => {
@@ -135,86 +187,39 @@ define(['knockout',
               })
             })
           }
-          
-          endpointData = async () => {
-            (hour <= 11) ? await Promise.all([endpoint4()]) : null;
-            (hour >= 12) ? await Promise.all([endpoint4(), endpoint5()]) : null;
-          }
-          
-          endpointData().then( () => {
-          
-            let orderData = controller.dataHour().sort( (a, b) => {
-              return a.h - b.h;
-            })
-          
-            historicOfficeHourMorning = orderData.slice(itemControl.horaInicioTurno1, itemControl.horaFimTurno1 + 1);
-            historicOfficeHourAfternoon = orderData.slice(itemControl.horaInicioTurno2, itemControl.horaFimTurno2 + 1);
-          
-            const detailsMorning = historicOfficeHourMorning.map((item) => {
-              return {
-                id: item.h,
-                series: 'Turno 1',
-                quarter: item.h,
-                group: 'Contador',
-                value: parseInt(item.v)
-              }
-            });
-            
-            const detailsAfternoon = historicOfficeHourAfternoon.map((item) => {
-              return {
-                id: item.h,
-                series: 'Turno 2',
-                quarter: item.h,
-                group: 'Contador',
-                value: parseInt(item.v)
-              }
-            });
-            
-            const detailsMorningAfternoon = [...detailsMorning, ...detailsAfternoon];
-            
-            if (self.dataSourceDataHour.length == 0) {
-              self.dataSourceDataHour.push([]);
-              self.dataSourceDataHour[idx].histHour = new ArrayDataProvider(detailsMorningAfternoon); 
-            }
-            
-            self.showGraphicHour(false);
-            
-            if ( (resultControl.length - 1) == idx) {
-              self.showGraphicHour(true);
-              self.showLoadingIndicator(false);
-              self.showSlider(true);
-            }
-          })
         })
       }
 
       self.createInterval = function () {
 
-        self.intervalDiary = setInterval( () => {
+        if (!Dash.config.intervalDiary()) {
+          
+          const intervalDiary = setInterval( () => {
 
-          if (params.router._activeState.path === 'dashboard-diario') {
+            if (params.router._activeState.path === 'dashboard-diario') {
 
-            self.showLoadingIndicator(true);
+              self.showLoadingIndicator(true);
+
+              controller.dataTotal().splice(-controller.dataTotal().length);
+              controller.dataHour().splice(-controller.dataHour().length);
+              
+              if (self.dataSourceDataHour) {
+                self.dataSourceDataHour.splice(-self.dataSourceDataHour.length);
+              }
   
-            controller.dataTotal().splice(-controller.dataTotal().length);
-            controller.dataHour().splice(-controller.dataHour().length);
-            
-            if (self.dataSourceDataHour) {
-              self.dataSourceDataHour.splice(-self.dataSourceDataHour.length);
+              self.queryController();
+  
             }
+          }, 30000);
 
-            self.queryController();
-
-          }
-        }, 30000);
+          Dash.config.intervalDiary(intervalDiary);
+        }
       }
       
       self.connected = function() {
         accUtils.announce('Dashboard page loaded.');
         document.title = "Dashboard";
 
-        onDeviceReady();
-        
         window.addEventListener('orientationchange', self.identifyScreenSize);
 
         self.queryController();

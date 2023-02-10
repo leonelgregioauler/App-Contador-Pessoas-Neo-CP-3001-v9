@@ -15,6 +15,7 @@
     <plugin name="cordova-plugin-network-information" spec="1" />
     <plugin name="cordova-plugin-dialogs" spec="1" />
     <plugin name="cordova-plugin-splashscreen" spec="*"/>
+    <plugin name="cordova-plugin-networkinterface" source="npm" />
 
     <content src="index.html"/>
     <access origin="*"/>
@@ -36,7 +37,7 @@
         <preference name="SplashScreenWidth" value="1240" /> <!-- defaults to "170" -->
         <preference name="SplashScreenHeight" value="600" /> <!-- defaults to "200" -->
         <preference name="SplashScreenSpinnerColor" value="DarkRed"/>
-      </platform>
+    </platform>
     <platform name="windows">
         <preference name="windows-target-version" value="10.0"/>
         <preference name="SplashScreenDelay" value="0"/>

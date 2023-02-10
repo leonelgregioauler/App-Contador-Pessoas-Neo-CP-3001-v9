@@ -14,6 +14,8 @@ define(['knockout'],
     self.showRequestRegister = ko.observable(true);
     self.showSlider = ko.observable(false);
 
+    self.intervalDiary = ko.observable();
+    self.intervalMonthly = ko.observable();
     self.indeterminate = ko.observable(-1);
     self.progressValue = ko.observable(0);
 
@@ -22,6 +24,24 @@ define(['knockout'],
     self.actualValue = ko.observable();
     self.transientValue = ko.observable();
     self.stepValue = ko.observable();
+
+    self.networkInformation = {
+      connectOnWiFi : 'Por favor, conecte-se à rede wi-fi do contador de pessoas.',
+      connectionOffLine : 'Conexão Off-line.',
+      connectionOnLine : 'Conexão On-line.',
+      networkConnected : 'Dispositivo conectado à rede : \n',
+      failedToFetch : 'Dispositivo contador de pessoas inacessível',
+      alertType : {
+        alert: 'Alerta de Conexão',
+        technicalInformation: 'Informações Técnicas'
+      },
+      confirmButton : ['OK', 'Detalhes'],
+      alertButton : 'OK',
+      ipInformation : ko.observable(),
+      subnetInformation : ko.observable(),
+      errorOnGetWiFiAddress : ko.observable(),
+      connection : ko.observable()
+    };
 
     self.identifyScreenSize = () => {
       if (screen.width < 500) {
@@ -75,46 +95,94 @@ define(['knockout'],
       dataTotal : ko.observableArray([])
     }
 
-    function onDeviceReady () {
+    function getNetworkInformation (data) {
+
       var networkState = navigator.connection.type;
 
       var states = {};
-      states[Connection.UNKNOWN]  = 'Unknown connection';
-      states[Connection.ETHERNET] = 'Ethernet connection';
-      states[Connection.WIFI]     = 'WiFi connection';
-      states[Connection.CELL_2G]  = 'Cell 2G connection';
-      states[Connection.CELL_3G]  = 'Cell 3G connection';
-      states[Connection.CELL_4G]  = 'Cell 4G connection';
-      states[Connection.CELL]     = 'Cell generic connection';
-      states[Connection.NONE]     = 'No network connection';
-  
-      if ((states[networkState] != 'WiFi connection') && (states[networkState] != 'Unknown connection')) {
+        states[Connection.UNKNOWN]  = 'Conexão desconhecida';
+        states[Connection.ETHERNET] = 'Conexão de Rede';
+        states[Connection.WIFI]     = 'Conexão Wi-Fi';
+        states[Connection.CELL_2G]  = 'Conexão 2G';
+        states[Connection.CELL_3G]  = 'Conexão 3G';
+        states[Connection.CELL_4G]  = 'Conexão 4G';
+        states[Connection.CELL]     = 'Conexão genérica';
+        states[Connection.NONE]     = 'Sem conexão de rede';
+        
+        self.networkInformation.connection(states[networkState]);
+      
+      function onError( error ) {
+        // Note: onError() will be called when an IP address can't be
+        // found, e.g. WiFi is disabled, no SIM card, Airplane mode
+        self.networkInformation.errorOnGetWiFiAddress(`\n${error}`);
+        self.networkInformation.ipInformation('');
+        self.networkInformation.subnetInformation('');
 
-        navigator.notification.alert(
-          'Por favor, conecte-se à rede wi-fi do contador de pessoas.',
-          null,
-          'Alerta de Conexão',
-          'OK'
+        navigator.notification.confirm(
+          self.networkInformation.connectOnWiFi,
+          onConfirm,
+          self.networkInformation.alertType.alert,
+          self.networkInformation.confirmButton
         );
       }
+      
+      function onSuccess( ipInformation ) {
+        self.networkInformation.errorOnGetWiFiAddress('');
+        if (ipInformation) {
+          self.networkInformation.ipInformation( (ipInformation.ip) ? `\nIP : ${ipInformation.ip}` : `\nIP : ${ipInformation}` );
+          self.networkInformation.subnetInformation( (ipInformation.subnet) ? `\nGateway : ${ipInformation.subnet}` : `Gateway : Desconhecida.` );
+        } else {
+          self.networkInformation.ipInformation('');
+          self.networkInformation.subnetInformation('');
+        }
+      
+
+        if (data) {
+          navigator.notification.confirm(
+            self.networkInformation.failedToFetch,
+            onConfirm,
+            self.networkInformation.alertType.alert,
+            self.networkInformation.confirmButton
+          );
+        } else if (states[networkState] = 'Conexão Wi-Fi') {
+          navigator.notification.confirm(
+            self.networkInformation.connectionOnLine,
+            onConfirm,
+            self.networkInformation.alertType.alert,
+            self.networkInformation.confirmButton
+          );
+        }
+      }
+
+      networkinterface.getWiFiIPAddress(onSuccess, onError);
+
     };
 
+    function onConfirm(buttonIndex) {
+      if (buttonIndex == 2) {
+        navigator.notification.alert(
+          self.networkInformation.networkConnected + 
+          self.networkInformation.connection() + 
+          self.networkInformation.ipInformation() + 
+          self.networkInformation.subnetInformation() + 
+          self.networkInformation.errorOnGetWiFiAddress(),
+          null,
+          self.networkInformation.alertType.technicalInformation,
+          self.networkInformation.alertButton
+        );
+      }
+    }
+
     function onOffline() {
-      navigator.notification.alert(
-        'Conexão offline.',
-        null,
-        'Alerta de Conexão',
-        'OK'
-      );
+
+      getNetworkInformation();
+
     }
 
     function onOnline() {
-      navigator.notification.alert(
-        'Conexão online.',
-        null,
-        'Alerta de Conexão',
-        'OK'
-      );
+      
+      getNetworkInformation();
+      
     }
 
     document.addEventListener("offline", onOffline, false);
@@ -134,6 +202,8 @@ define(['knockout'],
         showRequestRegister : self.showRequestRegister,
         showSlider : self.showSlider,
         
+        intervalDiary : self.intervalDiary,
+        intervalMonthly : self.intervalMonthly,
         indeterminate : self.indeterminate,
         progressValue : self.progressValue,
         
@@ -159,7 +229,8 @@ define(['knockout'],
         colorOfficeHourAfternoon : self.colorOfficeHourAfternoon,
         colorMonth : self.colorMonth,
 
-        onDeviceReady : onDeviceReady,
+        networkInformation : self.networkInformation,
+        getNetworkInformation : getNetworkInformation,
 
         controller : controller
       }

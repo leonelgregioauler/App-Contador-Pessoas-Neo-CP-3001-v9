@@ -1,6 +1,6 @@
 {
   "name": "com.leonelgregioauler.contadorpessoas",
-  "displayName": "Contador de Pessoas",
+  "displayName": "Neo3001",
   "version": "1.0.0",
   "description": "A sample Apache Cordova application that responds to the deviceready event.",
   "main": "index.js",
@@ -27,7 +27,8 @@
       "cordova-plugin-inappbrowser": {},
       "cordova-plugin-network-information": {},
       "cordova-plugin-dialogs": {},
-      "cordova-plugin-splashscreen": {}
+      "cordova-plugin-splashscreen": {},
+      "cordova-plugin-networkinterface": {}
     },
     "platforms": [
       "android",
