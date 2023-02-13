@@ -183,7 +183,15 @@
         <oj-label
           style="text-align: center; font-size: 12px; font-weight: bold;"
           >
-          Neo CP 3001 - v20230103.1
+          <div class="app-version">
+            <oj-bind-text value="[[appVersion]]"></oj-bind-text>
+          </div>
+          <div class="ip-celular">
+            <oj-bind-text value="[[networkInformation.ipInformation]]"></oj-bind-text>
+          </div>
+          <div class="gateway-celular">
+            <oj-bind-text value="[[networkInformation.subnetInformation]]"></oj-bind-text>
+          </div>
         </oj-label>
       </footer>
     </div>

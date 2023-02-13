@@ -10,6 +10,7 @@ define([
   "ojs/ojknockout-keyset",
   "ojs/ojkeyset",
   "ojs/ojasyncvalidator-regexp",
+  "viewModels/dashboard",
   "ojs/ojknockout",
   "ojs/ojinputtext",
   "ojs/ojinputnumber",
@@ -22,7 +23,7 @@ define([
   "ojs/ojdialog",
   "ojs/ojselectsingle",
   "ojs/ojswitch"
-], function (ko, app, moduleUtils, accUtils, Context, DataBase, ArrayDataProvider, keySet, KeySetImpl, AsyncRegExpValidator) {
+], function (ko, app, moduleUtils, accUtils, Context, DataBase, ArrayDataProvider, keySet, KeySetImpl, AsyncRegExpValidator, Dash) {
   function ControladoraViewModel() {
     var self = this;
 
@@ -36,6 +37,23 @@ define([
     })
 
     self.currentIndex;
+    
+    const date = new Date();
+    const day = (date.getDate()).toLocaleString('pt-BR', {
+      minimumIntegerDigits: 2,
+      useGrouping: false
+    });
+    const month = (date.getMonth() + 1).toLocaleString('pt-BR', {
+      minimumIntegerDigits: 2,
+      useGrouping: false
+    });
+    const year = date.getFullYear();
+    
+    const appVersion = `Neo CP 3001 - v ${year}${month}${day}.1`;
+
+    self.appVersion = ko.observable(appVersion);
+
+    self.networkInformation = Dash.config.networkInformation;
 
     self.controllerRegistration = {
       idControladora : ko.observable(),
@@ -247,6 +265,23 @@ define([
     self.validators = [
       new AsyncRegExpValidator(options)
     ];
+    
+    function onError( error ) {
+      self.networkInformation.ipInformation('');
+      self.networkInformation.subnetInformation('');
+    }
+
+    function onSuccess( ipInformation ) {
+      if (ipInformation) {
+        self.networkInformation.ipInformation( (ipInformation.ip) ? `\nIP : ${ipInformation.ip}` : `\nIP : ${ipInformation}` );
+        self.networkInformation.subnetInformation( (ipInformation.subnet) ? `\nGateway : ${ipInformation.subnet}` : `Gateway : Desconhecida.` );
+      } else {
+        self.networkInformation.ipInformation('');
+        self.networkInformation.subnetInformation('');
+      }
+    }
+
+    networkinterface.getWiFiIPAddress(onSuccess, onError);
     
     self.connected = function () {
       accUtils.announce("About page loaded.", "assertive");
