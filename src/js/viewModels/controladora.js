@@ -149,7 +149,7 @@ define([
         horaFimTurno1 : self.controllerRegistration.horaFimTurno1(), 
         horaInicioTurno2 : self.controllerRegistration.horaInicioTurno2(), 
         horaFimTurno2 : self.controllerRegistration.horaFimTurno2(),
-        exibeDashBoard : self.controllerRegistration.exibeDashBoard()
+        exibeDashBoard : self.controllerRegistration.exibeDashBoard(true)
       }
 
       if ((itemToAdd !== '')) {
@@ -179,7 +179,7 @@ define([
         horaFimTurno1 : self.controllerRegistration.horaFimTurno1(), 
         horaInicioTurno2 : self.controllerRegistration.horaInicioTurno2(), 
         horaFimTurno2 : self.controllerRegistration.horaFimTurno2(),
-        exibeDashBoard : self.controllerRegistration.exibeDashBoard()
+        exibeDashBoard : self.controllerRegistration.exibeDashBoard(true)
       }
 
       //self.dataController.splice(self.currentIndex, 1, controller);
@@ -202,13 +202,13 @@ define([
       ControllerLeft = items.filter( (config, index) => {
         return config.idControladora !== itemToRemove.idControladora
       })
+      self.close();
       DataBase.deleteController(itemToRemove.idControladora);
       self.showListView(false);
       self.queryController();
       self.controllerRegistration.descricaoControladora('');
       self.controllerRegistration.IP('');
       self.idControladoraToSelected(ControllerLeft[0].value);
-      self.close();
     }.bind(self);
  
     
