@@ -65,6 +65,8 @@ define([
       horaFimTurno2 : ko.observable(),
       exibeDashBoard : ko.observable(true),
     }
+
+    self.idControladoraToSelected = ko.observable();
     
     self.dataController = ko.observableArray([]);
     self.showListView = ko.observable(false);
@@ -83,10 +85,23 @@ define([
         self.lastItemId = Math.max.apply(null, array);
         self.dataProviderController = new ArrayDataProvider(self.dataController, { keyAttributes: "idControladora" } );
 
-        return result.filter(result => result.exibeDashBoard == true);
+        let data = result.map( (item) => {
+          if (item.exibeDashBoard == true) {
+            return item 
+          }
+        })
+
+        return data.filter( (item) => {
+          return item;
+        })
       })
       .then ((data) => {
-         setListItemSelected(data[0].value);
+         if (data.length > 0) {
+          setListItemSelected(data[0].value);
+        } else {
+          self.controllerRegistration.exibeDashBoard(false);
+          setListItemSelected(self.idControladoraToSelected());
+        }
       })
     }
     self.dataProviderController = new ArrayDataProvider(self.dataController, { keyAttributes: "idControladora" } );
@@ -184,18 +199,15 @@ define([
     self.removeSelected = function () {
       const items = self.dataController();
       var itemToRemove = self.dataController()[self.currentIndex];
-      ControllerLeft = items.filter( (config) => {
-        return config.label !== self.controllerRegistration.IP();
+      ControllerLeft = items.filter( (config, index) => {
+        return config.idControladora !== itemToRemove.idControladora
       })
       DataBase.deleteController(itemToRemove.idControladora);
       self.showListView(false);
       self.queryController();
       self.controllerRegistration.descricaoControladora('');
       self.controllerRegistration.IP('');
-      self.controllerRegistration.horaInicioTurno1();
-      self.controllerRegistration.horaFimTurno1();
-      self.controllerRegistration.horaInicioTurno2();
-      self.controllerRegistration.horaFimTurno2();
+      self.idControladoraToSelected(ControllerLeft[0].value);
       self.close();
     }.bind(self);
  
@@ -257,7 +269,7 @@ define([
     } */
     
     options = {
-      pattern: "\\d{3}\\.{1}\\d{3}\\.{1}\\d{1,3}\\.{1}\\d{1,3}",
+      pattern: "\\d{1,3}\\.{1}\\d{1,3}\\.{1}\\d{1,3}\\.{1}\\d{1,3}",
       hint: "Informe um valor de IP válido",
       messageDetail: "Informe um valor de IP válido",
     }
@@ -265,17 +277,30 @@ define([
     self.validators = [
       new AsyncRegExpValidator(options)
     ];
-    
+
     function onError( error ) {
       self.networkInformation.ipInformation('');
       self.networkInformation.subnetInformation('');
     }
 
+    self.consultarIPRede = function () {
+      self.controllerRegistration.IP(self.networkInformation.IP());
+    }
+
     function onSuccess( ipInformation ) {
+      let IP = (ipInformation.ip) ? ipInformation.ip : ipInformation;
+      IP = IP.split('.').slice(0, 3);
+      IP.push("10");
+      IP = IP.join('.');
+      const ipInfo = (ipInformation.ip) ? `\nIP : ${ipInformation.ip}` : `\nIP : ${ipInformation}`;
+      const subNet = (ipInformation.subnet) ? `\nGateway : ${ipInformation.subnet}` : `Gateway : Desconhecido.`;
       if (ipInformation) {
-        self.networkInformation.ipInformation( (ipInformation.ip) ? `\nIP : ${ipInformation.ip}` : `\nIP : ${ipInformation}` );
-        self.networkInformation.subnetInformation( (ipInformation.subnet) ? `\nGateway : ${ipInformation.subnet}` : `Gateway : Desconhecida.` );
+        self.networkInformation.IP(IP);
+        self.networkInformation.ipInformation(ipInfo);
+        self.networkInformation.subnetInformation(subNet);
       } else {
+        self.controllerRegistration.IP('');
+        self.networkInformation.IP('');
         self.networkInformation.ipInformation('');
         self.networkInformation.subnetInformation('');
       }

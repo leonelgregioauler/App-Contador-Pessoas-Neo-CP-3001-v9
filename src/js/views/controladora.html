@@ -58,11 +58,19 @@
             </oj-input-text>
             <oj-input-text 
               id="ip"
+              style="height: 45px;"
               value="{{controllerRegistration.IP}}" 
               label-hint="Informe o IP da controladora"
               validators="[[validators]]"
               display-options.validator-hint="display">
             </oj-input-text>
+            <oj-button
+              id="consultar-ip-rede"
+              style="width: 20%; margin-bottom: 12px; float: left; background-color: rgb(255, 255, 255); border-radius: 5px;"
+              on-oj-action="[[consultarIPRede]]"
+              ><div style="color : black">Detectar IP</div>
+              <span slot='startIcon' class="icon-spinner9"></span>
+            </oj-button>
             <oj-input-number 
               id="hora-inicio-turno-1" 
               value="{{controllerRegistration.horaInicioTurno1}}" 

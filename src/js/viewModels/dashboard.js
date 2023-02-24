@@ -38,6 +38,7 @@ define(['knockout'],
       confirmButton : ['OK', 'Detalhes'],
       alertButton : 'OK',
       ipInformation : ko.observable(),
+      IP: ko.observable(),
       subnetInformation : ko.observable(),
       errorOnGetWiFiAddress : ko.observable(),
       connection : ko.observable()
@@ -128,9 +129,15 @@ define(['knockout'],
       
       function onSuccess( ipInformation ) {
         self.networkInformation.errorOnGetWiFiAddress('');
+
+        const IP = (ipInformation.ip) ? ipInformation.ip : ipInformation;
+        const ipInfo = (ipInformation.ip) ? `\nIP : ${ipInformation.ip}` : `\nIP : ${ipInformation}`;
+        const subNet = (ipInformation.subnet) ? `\nGateway : ${ipInformation.subnet}` : `Gateway : Desconhecido.`;
+
         if (ipInformation) {
-          self.networkInformation.ipInformation( (ipInformation.ip) ? `\nIP : ${ipInformation.ip}` : `\nIP : ${ipInformation}` );
-          self.networkInformation.subnetInformation( (ipInformation.subnet) ? `\nGateway : ${ipInformation.subnet}` : `Gateway : Desconhecida.` );
+          self.networkInformation.IP(IP);
+          self.networkInformation.ipInformation(ipInfo);
+          self.networkInformation.subnetInformation(subNet);
         } else {
           self.networkInformation.ipInformation('');
           self.networkInformation.subnetInformation('');
