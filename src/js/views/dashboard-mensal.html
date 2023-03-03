@@ -5,44 +5,54 @@
  -->
 <style>
 
-@media (orientation: landscape) {
-  
-  .chart {
-    width: 100%;
-    height: 100%;
+  @media (orientation: landscape) {
+    
+    .chart {
+      width: 100%;
+      height: 100%;
+    }
+
+    .now {
+      font-weight: bold; 
+      color: rgb(65 65 235);
+    }
+
+    .totals {
+      font-size: 25px; 
+      font-weight: bold; 
+      color: #373e44;
+    }
+
   }
 
-  .now {
-    font-weight: bold; 
-    color: rgb(65 65 235);
+  @media (orientation: portrait) {
+    
+    .chart {
+      width: 100%;
+      height: 350px;
+    }
+
+    .now {
+      font-weight: bold; 
+      color: rgb(65 65 235)
+    }
+
+    .totals {
+      font-size: 25px; 
+      font-weight: bold; 
+      color: #373e44;
+    }
   }
 
-  .totals {
-    font-size: 25px; 
-    font-weight: bold; 
-    color: #373e44;
+  #modalDialogGerarExcel #okButton .oj-button-label {
+    background-color: rgb(58, 54, 50);
+    color: #ffffff;
   }
 
-}
-
-@media (orientation: portrait) {
-  
-  .chart {
-    width: 100%;
-    height: 350px;
+  #modalDialogGerarExcel #cancelButton .oj-button-label {
+    background-color: #979899;
   }
 
-  .now {
-    font-weight: bold; 
-    color: rgb(65 65 235)
-  }
-
-  .totals {
-    font-size: 25px; 
-    font-weight: bold; 
-    color: #373e44;
-  }
-}
 </style>
 <div class="oj-hybrid-applayout-page">
   <div class="oj-applayout-fixed-top">
@@ -167,6 +177,46 @@
                 </oj-chart>
               </template>
             </oj-bind-for-each>
+            <oj-dialog 
+              id="modalDialogGerarExcel" 
+              dialog-title="Salvar histórico Mensal em Excel ?"
+              position.at.vertical="center"
+              position.my.vertical="center"
+              >
+              <div slot="body">
+                <oj-label>O arquivo será gerado na pasta Documents/CP 3001 - Relatório Mensal</oj-label>
+              </div>
+              <div slot="footer">
+                <oj-button id="okButton" on-oj-action="[[gerarExcel]]">Sim
+                </oj-button>
+                <oj-button id="cancelButton" on-oj-action="[[close]]">Não
+                </oj-button>
+              </div>
+            </oj-dialog>
+            <div>
+              <oj-button
+                id="gerar-excel"
+                style="margin-top: 10px"
+                on-oj-action="[[open]]"
+                >
+                <span slot='startIcon' class="icon-file-excel"></span>
+                Gerar Excel
+              </oj-button>
+            </div>
+            <oj-dialog 
+              id="modalDialogSemDadosHistorico" 
+              dialog-title="Dados não encontrados."
+              position.at.vertical="center"
+              position.my.vertical="center"
+              >
+              <div slot="body">
+                <oj-label>Verifique se o cadastro da controladora foi realizado e se o gráfico está gerando dados.</oj-label>
+              </div>
+              <div slot="footer">
+                <oj-button id="okButton" on-oj-action="[[closeAviso]]">Fechar
+                </oj-button>
+              </div>
+            </oj-dialog>
           </oj-bind-if>
         </div>
       </div>
