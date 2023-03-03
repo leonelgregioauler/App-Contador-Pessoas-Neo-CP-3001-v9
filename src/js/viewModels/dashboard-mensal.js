@@ -30,7 +30,7 @@ define(['knockout',
 
     function DashboardMensalViewModel(params) {
       var self = this;
-      
+
       self.stackValue = Dash.config.stackValue;
       self.orientationValue = Dash.config.orientationValue;
       self.lineTypeValue = Dash.config.lineTypeValue;
@@ -92,7 +92,7 @@ define(['knockout',
           const date = new Date();
           const hour = date.getHours();
           const day = date.getDate();
-          const month = date.getMonth() + 1;
+          const month = date.getMonth();
           const year = date.getFullYear();
           const fullDate = date.toLocaleDateString('pt-br');
           const monthYear = date.toLocaleDateString('pt-br', {
@@ -143,6 +143,28 @@ define(['knockout',
               if (self.dataSourceDataMonth.length == 0) {
                 self.dataSourceDataMonth.push([]);
                 self.dataSourceDataMonth[idx].histMonth = new ArrayDataProvider(details); 
+
+                let totalMensal = historicMonth.reduce( (accumulator, object) => {
+                  return accumulator + parseInt(object.v);
+                }, 0)
+
+                const meses = new Array(12);
+                meses[0] = 'Janeiro';
+                meses[1] = 'Fevereiro';
+                meses[2] = 'Marco';
+                meses[3] = 'Abril';
+                meses[4] = 'Maio';
+                meses[5] = 'Junho';
+                meses[6] = 'Julho';
+                meses[7] = 'Agosto';
+                meses[8] = 'Setembro';
+                meses[9] = 'Outubro';
+                meses[10] = 'Novembro';
+                meses[11] = 'Dezembro';
+
+                meses[month];
+
+                DataBase.insertUpdateVisitorsMonth(meses[month], year, totalMensal);
               }
   
               self.showGraphicMonth(false);
@@ -213,6 +235,39 @@ define(['knockout',
           Dash.config.intervalMonthly(intervalMonthly);
         }
       }
+
+      self.close = function(event) {
+        document.getElementById("modalDialogGerarExcel").close();
+      }
+      self.open = function(event) {
+        document.getElementById("modalDialogGerarExcel").open();
+      }
+
+      self.closeAviso = function(event) {
+        document.getElementById("modalDialogSemDadosHistorico").close();
+      }
+      self.openAviso = function(event) {
+        document.getElementById("modalDialogSemDadosHistorico").open();
+      }
+
+      self.gerarExcel = async () => {
+
+        self.close();
+
+        let resultVisitors = await DataBase.queryVisitorsMonth('SELECT * FROM RELATORIO_MENSAL');
+
+        let CSVData = `Mes;Visitantes\n` + resultVisitors.map( (item) => {
+          return item.mes+';'+item.visitantes;
+        }).join('\n');
+
+        let excel = new Blob([CSVData], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+        if (resultVisitors.length == 0) {
+          self.openAviso();
+        } else {
+          Util.ReadWriteFilesDevice(`Relatório Mensal.csv`, excel);
+        }
+      };
 
       self.connected = function() {
         accUtils.announce('Dashboard page loaded.');

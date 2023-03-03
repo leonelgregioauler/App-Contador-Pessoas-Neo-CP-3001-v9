@@ -28,7 +28,9 @@
       "cordova-plugin-network-information": {},
       "cordova-plugin-dialogs": {},
       "cordova-plugin-splashscreen": {},
-      "cordova-plugin-networkinterface": {}
+      "cordova-plugin-networkinterface": {},
+      "cordova-plugin-file": {},
+      "cordova-plugin-file-transfer": {}
     },
     "platforms": [
       "android",

@@ -9,6 +9,7 @@ define([],
 
             db.transaction(function(tx) {
                 tx.executeSql('CREATE TABLE IF NOT EXISTS CONTROLADORAS (idControladora INTEGER PRIMARY KEY AUTOINCREMENT, descricaoControladora VARCHAR2(100) NOT NULL, IP VARCHAR2(100) NOT NULL, horaInicioTurno1 INTEGER NOT NULL, horaFimTurno1 INTEGER NOT NULL, horaInicioTurno2 INTEGER NOT NULL, horaFimTurno2 INTEGER NOT NULL, exibeDashBoard NUMBER)');
+                tx.executeSql('CREATE TABLE IF NOT EXISTS RELATORIO_MENSAL (mes VARCHAR2(20), ano INTEGER, visitantes INTEGER, constraint UK_MES_ANO UNIQUE (mes, ano))');
                 console.warn("Banco de Dados criado");
             });
         } catch (err) {
@@ -24,6 +25,7 @@ define([],
 
             db.transaction(function(tx) {
                 tx.executeSql('DROP TABLE CONTROLADORAS');
+                tx.executeSql('DROP TABLE RELATORIO_MENSAL');
             });
         } catch (err) {
         alert ('Erro ao remover tabelas '+ err);
@@ -124,13 +126,65 @@ define([],
         }
     }
 
+    function insertUpdateVisitorsMonth (month, year, total) {
+        try {
+            db = openDatabase ('App-Contador-Pessoas', 1.0, 'App Contador de Pessoas', 2 * 1024 * 1024);
+            // Migração SQLite
+            //db = window.sqlitePlugin.openDatabase ({name: 'App-Contador-Pessoas', location: 'default'});
+
+            db.transaction(function(tx) {
+                tx.executeSql(`INSERT OR REPLACE INTO RELATORIO_MENSAL (mes, ano, visitantes) VALUES (\'${month}\', ${year}, ${total})`);
+            });
+        } catch (err) {
+            alert ('Erro ao inserir ou atualizar visitantes '+ err);
+        }
+    }
+
+    function queryVisitorsMonth (query) {
+        var visitors = [];
+        var visitorsMap = [];
+        try {
+            db = openDatabase ('App-Contador-Pessoas', 1.0, 'App Contador de Pessoas', 2 * 1024 * 1024);
+            // Migração SQLite
+            //db = window.sqlitePlugin.openDatabase ({name: 'App-Contador-Pessoas', location: 'default'});
+
+            return new Promise( (resolve, reject) => {
+                db.transaction(function(tx) {
+                    tx.executeSql(query, [], function(tx, result) {
+                        
+                        for (let i = 0; i < result.rows.length; i++) {
+                            visitors.push(result.rows.item(i));
+                        }
+
+                        visitorsMap = visitors.map((item) => {
+                            return {
+                                mes: item.mes,
+                                ano: item.ano,
+                                visitantes: item.visitantes
+                            }
+                        })
+                        
+                        resolve(visitorsMap);
+                    }, reject)
+                })
+            });
+        } catch (err) {
+          alert ('Erro ao consultar os dados mensais de visitantes ' + err);
+        }
+        return visitors;
+    }
+
+
+
     return { 
              createDataBase: createDataBase,
              dropDataBase: dropDataBase,
              insertController: insertController,
              updateController: updateController,
              queryController: queryController,
-             deleteController: deleteController
+             deleteController: deleteController,
+             insertUpdateVisitorsMonth: insertUpdateVisitorsMonth,
+             queryVisitorsMonth: queryVisitorsMonth
            };
   }
 );
