@@ -1,5 +1,5 @@
-define(['knockout'], 
-  function (ko) {
+define(['knockout', 'ojs/ojarraydataprovider'], 
+  function (ko, ArrayDataProvider) {
     var self = this;
 
     self.stackValue = ko.observable("on");
@@ -14,7 +14,7 @@ define(['knockout'],
     self.showRequestRegister = ko.observable(true);
     self.showSlider = ko.observable(false);
 
-    self.intervalDiary = ko.observable();
+    self.intervalDaily = ko.observable();
     self.intervalMonthly = ko.observable();
     self.indeterminate = ko.observable(-1);
     self.progressValue = ko.observable(0);
@@ -75,14 +75,14 @@ define(['knockout'],
       IP : ko.observable()
     }
 
-    let historicMonth = [];
-    let historicOfficeHourMorning = [];
-    let historicOfficeHourAfternoon = [];
+    let historicMonth = new Array();
+    let historicOfficeHourMorning = new Array();
+    let historicOfficeHourAfternoon = new Array();
     self.colorOfficeHourMorning = ko.observable('rgb(0 6 249)');
     self.colorOfficeHourAfternoon = ko.observable('rgb(238 14 14)');
     self.colorMonth = ko.observable('rgb(238 14 14)');
-    self.dataSourceDataHour = [];
-    self.dataSourceDataMonth = [];
+    self.dataSourceDataHour = new Array({ histHour : new ArrayDataProvider([]) });
+    self.dataSourceDataMonth = new Array({ histMonth : new ArrayDataProvider([]) });
     
     const controller = {
       parameter1to12 : 1,
@@ -93,7 +93,8 @@ define(['knockout'],
       parameterTotal : 6,
       dataMonth : ko.observableArray([]),
       dataHour : ko.observableArray([]),
-      dataTotal : ko.observableArray([])
+      dataTotal : ko.observableArray([]),
+      dataMonthList: ko.observableArray([])
     }
 
     function getNetworkInformation (data) {
@@ -142,7 +143,6 @@ define(['knockout'],
           self.networkInformation.ipInformation('');
           self.networkInformation.subnetInformation('');
         }
-      
 
         if (data) {
           navigator.notification.confirm(
@@ -162,7 +162,6 @@ define(['knockout'],
       }
 
       networkinterface.getWiFiIPAddress(onSuccess, onError);
-
     };
 
     function onConfirm(buttonIndex) {
@@ -209,7 +208,7 @@ define(['knockout'],
         showRequestRegister : self.showRequestRegister,
         showSlider : self.showSlider,
         
-        intervalDiary : self.intervalDiary,
+        intervalDaily : self.intervalDaily,
         intervalMonthly : self.intervalMonthly,
         indeterminate : self.indeterminate,
         progressValue : self.progressValue,

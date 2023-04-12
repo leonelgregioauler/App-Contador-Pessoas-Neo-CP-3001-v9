@@ -56,7 +56,7 @@ define(['knockout',
       self.restartButton = () => {
         self.indeterminate(-1);
         self.progressValue(0);
-        self.createInterval();
+        self.createIntervalDaily();
       };
       
       self.buttonDisplay = Dash.config.buttonDisplay;
@@ -99,6 +99,8 @@ define(['knockout',
           const fullDate = date.toLocaleDateString('pt-br');
 
           Util.callGetService(itemControl.IP, controller.parameterTotal).then( (response) => {
+            controller.dataTotal().splice(-controller.dataTotal().length);
+
             response.historico.forEach( (item) => {
               controller.dataTotal.push(item);
             }) 
@@ -115,6 +117,8 @@ define(['knockout',
           .then( () => {
             
             endpointData = async () => {
+              controller.dataHour().splice(-controller.dataHour().length);
+
               (hour <= 11) ? await Promise.all([endpoint4()]) : null;
               (hour >= 12) ? await Promise.all([endpoint4(), endpoint5()]) : null;
             }
@@ -150,10 +154,7 @@ define(['knockout',
               
               const detailsMorningAfternoon = [...detailsMorning, ...detailsAfternoon];
               
-              if (self.dataSourceDataHour.length == 0) {
-                self.dataSourceDataHour.push([]);
-                self.dataSourceDataHour[idx].histHour = new ArrayDataProvider(detailsMorningAfternoon); 
-              }
+              self.dataSourceDataHour[0].histHour.data = detailsMorningAfternoon;
               
               self.showGraphicHour(false);
               
@@ -165,8 +166,7 @@ define(['knockout',
             })
           })
           .catch( (error) => {
-            clearInterval(Dash.config.intervalDiary());
-            Dash.config.intervalDiary('');
+            self.clearIntervalDaily();
             self.indeterminate(0);
             self.progressValue(Math.floor(Math.random() * 100));
             getNetworkInformation(error);
@@ -190,11 +190,16 @@ define(['knockout',
         })
       }
 
-      self.createInterval = function () {
+      self.clearIntervalDaily = function () { 
+        clearInterval(Dash.config.intervalDaily());
+        Dash.config.intervalDaily('');
+      }
 
-        if (!Dash.config.intervalDiary()) {
+      self.createIntervalDaily = function () {
+
+        if (!Dash.config.intervalDaily()) {
           
-          const intervalDiary = setInterval( () => {
+          const intervalDaily = setInterval( () => {
 
             if (params.router._activeState.path === 'dashboard-diario') {
 
@@ -202,17 +207,13 @@ define(['knockout',
 
               controller.dataTotal().splice(-controller.dataTotal().length);
               controller.dataHour().splice(-controller.dataHour().length);
-              
-              if (self.dataSourceDataHour) {
-                self.dataSourceDataHour.splice(-self.dataSourceDataHour.length);
-              }
-  
+
               self.queryController();
   
             }
           }, 30000);
 
-          Dash.config.intervalDiary(intervalDiary);
+          Dash.config.intervalDaily(intervalDaily);
         }
       }
       
@@ -223,7 +224,7 @@ define(['knockout',
         window.addEventListener('orientationchange', self.identifyScreenSize);
 
         self.queryController();
-        self.createInterval();
+        self.createIntervalDaily();
         self.identifyScreenSize();
       };
 

@@ -22,15 +22,17 @@ define([],
       })
     }
 
-    ReadWriteFilesDevice = (fileName, BlobData) => {
-
-      window.resolveLocalFileSystemURL('file:///storage/emulated/0/', function (dirEntry) {
+    ReadWriteFilesDevice = async (folderName, fileName, BlobData) => {
+      // Diretório de Documentos
+      const DIR_ENTRY = 'file:///storage/emulated/0/';
+      
+      window.resolveLocalFileSystemURL(DIR_ENTRY, function (dirEntry) {
         createDirectory(dirEntry);
       }, onErrorLoadFs);
 
       function createDirectory(rootDirEntry) {
         rootDirEntry.getDirectory('Documents', { create: true }, function (dirEntry) {
-          dirEntry.getDirectory('CP 3001 - Relatório Mensal', { create: true }, function (subDirEntry) {
+          dirEntry.getDirectory(folderName, { create: true }, function (subDirEntry) {
 
             createFile(subDirEntry, fileName);
 

@@ -44,13 +44,17 @@
     }
   }
 
-  #modalDialogGerarExcel #okButton .oj-button-label {
+  #modalDialogArquivoGerado #okButton .oj-button-label {
     background-color: rgb(58, 54, 50);
     color: #ffffff;
   }
 
-  #modalDialogGerarExcel #cancelButton .oj-button-label {
+  #modalDialogArquivoGerado #cancelButton .oj-button-label {
     background-color: #979899;
+  }
+  
+  #modalDialogGerarExcelLista {
+    background-color: #ffffff;
   }
 
 </style>
@@ -118,6 +122,24 @@
             <span>Cadastro da controladora não realizado. Acessar "Ajustes"</span>
           </oj-bind-if>
           <oj-bind-if test="[[showGraphicMonth]]">
+            <oj-select-single
+              id="lista-historico-meses"
+              style="margin-bottom: 50px;"
+              label-hint="Selecione o mês para visualizar o histórico"
+              data="[[dataProviderMonthsList]]"
+              value="{{initialValueListMonths}}"
+              value-item="{{valueSelectedHistoricMonthsList}}"
+              on-value-item-changed="[[queryHistoricalData]]"
+              >
+            </oj-select-single>
+            <div>
+              <oj-button
+                id="excel"
+                on-oj-action="[[openGerarExcelLista]]"
+              >
+              <span slot='startIcon' class="icon-file-excel"></span>
+              </oj-button>
+            </div>
             <oj-bind-for-each data="[[dataSourceDataMonth]]">
               <template data-oj-as="controladora">
                 <oj-chart 
@@ -178,31 +200,43 @@
               </template>
             </oj-bind-for-each>
             <oj-dialog 
-              id="modalDialogGerarExcel" 
-              dialog-title="Salvar histórico Mensal em Excel ?"
+              id="modalDialogArquivoGerado" 
+              dialog-title="Arquivo Salvo com Sucesso."
               position.at.vertical="center"
               position.my.vertical="center"
               >
               <div slot="body">
-                <oj-label>O arquivo será gerado na pasta Documents/CP 3001 - Relatório Mensal</oj-label>
+                <oj-label>Salvamos seu relatório na pasta Documentos do seu dispositivo.</oj-label>
               </div>
               <div slot="footer">
-                <oj-button id="okButton" on-oj-action="[[gerarExcel]]">Sim
-                </oj-button>
-                <oj-button id="cancelButton" on-oj-action="[[close]]">Não
+                <oj-button id="okButton" on-oj-action="[[close]]">Fechar
                 </oj-button>
               </div>
             </oj-dialog>
-            <div>
-              <oj-button
-                id="gerar-excel"
-                style="margin-top: 10px"
-                on-oj-action="[[open]]"
-                >
-                <span slot='startIcon' class="icon-file-excel"></span>
-                Gerar Excel
-              </oj-button>
-            </div>
+
+            
+            <oj-dialog 
+              id="modalDialogGerarExcelLista" 
+              dialog-title="Opções de Relatório"
+              position.at.vertical="center"
+              position.my.vertical="center"
+              >
+              <div slot="body">
+                <oj-button 
+                  id="relatorio-mensal"
+                  style="width: 100%; margin: 5px;" 
+                  on-oj-action="[[gerarExcel]]"
+                  >Gerar Excel
+                </oj-button>
+                <oj-button 
+                  id="relatorio-mensal-detalhes" 
+                  style="width: 100%; margin: 5px;"
+                  disabled="[[isMonthSelected]]"
+                  on-oj-action="[[gerarExcelDetalhes]]"
+                  >Gerar Excel Detalhado
+                </oj-button>
+              </div>
+            </oj-dialog>
             <oj-dialog 
               id="modalDialogSemDadosHistorico" 
               dialog-title="Dados não encontrados."
