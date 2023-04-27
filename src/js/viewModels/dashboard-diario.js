@@ -70,6 +70,7 @@ define(['knockout',
       self.colorOfficeHourAfternoon = Dash.config.colorOfficeHourAfternoon;
       self.dataSourceDataHour = Dash.config.dataSourceDataHour;
 
+      networkInformation = Dash.config.networkInformation;
       getNetworkInformation = Dash.config.getNetworkInformation;
 
       const controller = Dash.config.controller;
@@ -124,7 +125,7 @@ define(['knockout',
             }
             
             endpointData().then( () => {
-            
+
               let orderData = controller.dataHour().sort( (a, b) => {
                 return a.h - b.h;
               })
@@ -209,6 +210,9 @@ define(['knockout',
               controller.dataHour().splice(-controller.dataHour().length);
 
               self.queryController();
+
+              networkInformation.flagOnline = true;
+              networkInformation.flagOffline = true;
   
             }
           }, 30000);

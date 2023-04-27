@@ -30,7 +30,7 @@ define(['knockout', 'ojs/ojarraydataprovider'],
       connectionOffLine : 'Conexão Off-line.',
       connectionOnLine : 'Conexão On-line.',
       networkConnected : 'Dispositivo conectado à rede : \n',
-      failedToFetch : 'Dispositivo contador de pessoas inacessível',
+      failedToFetch : 'Dispositivo contador de pessoas inacessível.',
       alertType : {
         alert: 'Alerta de Conexão',
         technicalInformation: 'Informações Técnicas'
@@ -41,7 +41,9 @@ define(['knockout', 'ojs/ojarraydataprovider'],
       IP: ko.observable(),
       subnetInformation : ko.observable(),
       errorOnGetWiFiAddress : ko.observable(),
-      connection : ko.observable()
+      connection : ko.observable(),
+      flagOnline : true,
+      flagOffline : true
     };
 
     self.identifyScreenSize = () => {
@@ -120,12 +122,15 @@ define(['knockout', 'ojs/ojarraydataprovider'],
         self.networkInformation.ipInformation('');
         self.networkInformation.subnetInformation('');
 
-        navigator.notification.confirm(
-          self.networkInformation.connectOnWiFi,
-          onConfirm,
-          self.networkInformation.alertType.alert,
-          self.networkInformation.confirmButton
-        );
+        if (self.networkInformation.flagOffline) {
+          navigator.notification.confirm(
+            self.networkInformation.connectOnWiFi,
+            onConfirm,
+            self.networkInformation.alertType.alert,
+            self.networkInformation.confirmButton
+          );
+          self.networkInformation.flagOffline = false;
+        }
       }
       
       function onSuccess( ipInformation ) {
@@ -151,13 +156,16 @@ define(['knockout', 'ojs/ojarraydataprovider'],
             self.networkInformation.alertType.alert,
             self.networkInformation.confirmButton
           );
-        } else if (states[networkState] = 'Conexão Wi-Fi') {
+          self.networkInformation.flagOffline = true;
+
+        } else if ((states[networkState] = 'Conexão Wi-Fi') && self.networkInformation.flagOnline) {
           navigator.notification.confirm(
             self.networkInformation.connectionOnLine,
             onConfirm,
             self.networkInformation.alertType.alert,
             self.networkInformation.confirmButton
-          );
+          ); 
+          self.networkInformation.flagOnline = false;
         }
       }
 
@@ -180,15 +188,15 @@ define(['knockout', 'ojs/ojarraydataprovider'],
     }
 
     function onOffline() {
-
-      getNetworkInformation();
-
+      if (self.networkInformation.flagOffline) {
+        getNetworkInformation();
+      }
     }
 
     function onOnline() {
-      
-      getNetworkInformation();
-      
+      if (self.networkInformation.flagOnline) {
+        getNetworkInformation();
+      }
     }
 
     document.addEventListener("offline", onOffline, false);

@@ -57,6 +57,10 @@
     background-color: #ffffff;
   }
 
+  #excel:first-child button {
+    border-color: green;
+  }
+
 </style>
 <div class="oj-hybrid-applayout-page">
   <div class="oj-applayout-fixed-top">
@@ -137,7 +141,7 @@
                 id="excel"
                 on-oj-action="[[openGerarExcelLista]]"
               >
-              <span slot='startIcon' class="icon-file-excel"></span>
+              <span slot='startIcon' style="color: green;" class="icon-file-excel"></span>
               </oj-button>
             </div>
             <oj-bind-for-each data="[[dataSourceDataMonth]]">
@@ -234,6 +238,12 @@
                   disabled="[[isMonthSelected]]"
                   on-oj-action="[[gerarExcelDetalhes]]"
                   >Gerar Excel Detalhado
+                </oj-button>
+                <oj-button 
+                  id="cancelar-relatorio" 
+                  style="width: 100%; margin: 5px;"
+                  on-oj-action="[[closeGerarExcelLista]]"
+                  >Cancelar
                 </oj-button>
               </div>
             </oj-dialog>

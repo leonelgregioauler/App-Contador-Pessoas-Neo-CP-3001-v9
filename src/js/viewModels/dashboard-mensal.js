@@ -71,6 +71,7 @@ define(['knockout',
       self.colorMonth = Dash.config.colorMonth;
       self.dataSourceDataMonth = Dash.config.dataSourceDataMonth;
       
+      networkInformation = Dash.config.networkInformation;
       getNetworkInformation = Dash.config.getNetworkInformation;
 
       const controller = Dash.config.controller;
@@ -144,7 +145,7 @@ define(['knockout',
             }
   
             endpointData().then( () => {
-  
+
               let orderData = controller.dataMonth().sort( (a, b) => {
                 return a.d - b.d;
               });
@@ -323,6 +324,9 @@ define(['knockout',
               controller.dataMonth().splice(-controller.dataMonth().length);
               
               self.queryController();
+
+              networkInformation.flagOnline = true;
+              networkInformation.flagOffline = true;
   
             }
           }, 30000);
