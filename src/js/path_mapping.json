@@ -13,6 +13,19 @@
 
   "libs": {
 
+    "axios": {
+      "cdn": "3rdparty",
+      "cwd": "node_modules/axios/dist",
+      "debug": {
+        "src": "axios.js",
+        "path": "libs/axios/axios.js"
+      },
+      "release": {
+        "src": "axios.min.js",
+        "path": "libs/axios/axios.js"
+      }
+    },
+
     "knockout": {
       "cdn": "3rdparty",
       "cwd": "node_modules/knockout/build/output",

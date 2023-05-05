@@ -1,30 +1,28 @@
-define([],
-  function () {
+define(['axios'],
+  function (Axios) {
 
     callGetService = async (IP, parameter) => {
 
-      let url = `http://${IP}/${parameter}`;
+      const localFilePath = `${cordova.file.applicationDirectory}www/data/data-${parameter}.json`;
+      //const localFilePath = `../data/data-${parameter}.json`;
 
+      (IP != '8.8.8.8') ? url = `http://${IP}/${parameter}` : url = `${localFilePath}`;
+      
       return new Promise((resolve, reject) => {
 
-        fetch(url, {
-          method: 'GET',
-        })
-        .then(response => {
-          return response.json();
-        })
-        .then((data) => {
-          (data.items) ? resolve(data.items[0]) : resolve(data);
-        })
-        .catch((error) => {
-          reject(error);
-        })
+        Axios.get(url)
+          .then((data) => {
+            (!data.data.items) ? resolve(data.data) : resolve(data.data.items[0]);
+          })
+          .catch((error) => {
+            reject(error);
+          })
       })
     }
 
     ReadWriteFilesDevice = async (folderName, fileName, BlobData) => {
       // Diretório de Documentos
-      const DIR_ENTRY = 'file:///storage/emulated/0/';
+      const DIR_ENTRY = cordova.file.externalRootDirectory;
       
       window.resolveLocalFileSystemURL(DIR_ENTRY, function (dirEntry) {
         createDirectory(dirEntry);
