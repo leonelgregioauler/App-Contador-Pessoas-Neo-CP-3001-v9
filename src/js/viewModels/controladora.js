@@ -49,8 +49,16 @@ define([
     });
     const year = date.getFullYear();
     
-    const appVersion = `Neo CP 3001 - v 20230412.1`;
+    //const appVersion = `Neo CP 3001 - v ${year}${month}${day}.1`;
+    const appVersion = `Neo CP 3001 - v 20230504.1`;
     
+    //let storage = window.localStorage;
+
+    //const appVersion = storage.getItem(appVersion); ///`Neo CP 3001 - v 20230303.1`;
+
+
+
+
     self.appVersion = ko.observable(appVersion);
 
     self.networkInformation = Dash.config.networkInformation;
