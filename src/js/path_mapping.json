@@ -22,7 +22,7 @@
       },
       "release": {
         "src": "axios.min.js",
-        "path": "libs/axios/axios-min.js"
+        "path": "libs/axios/axios.min.js"
       }
     },
 
