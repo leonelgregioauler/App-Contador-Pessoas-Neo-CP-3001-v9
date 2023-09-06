@@ -380,8 +380,10 @@ define(['knockout',
         if (resultVisitors.length == 0) {
           self.openAviso();
         } else {
-          let aguardar = Util.ReadWriteFilesDevice(`CP 3001 - Relatório Mensal`, `Relatório Mensal.csv`, excel).then( () => {
-            self.open();
+          Util.ReadWriteFilesDevice(`CP 3001 - Relatório Mensal`, `Relatório Mensal.csv`, excel).then( (result) => {
+            if (result == 'WRITE') {
+              self.open();
+            }
           })
         }
         self.closeGerarExcelLista();
@@ -415,8 +417,10 @@ define(['knockout',
         if (resultVisitorsDetails.length == 0) {
           self.openAviso();
         } else {
-          let aguardar = Util.ReadWriteFilesDevice(`CP 3001 - Relatório Mensal Detalhado`, `Relatório Mensal Detalhado.csv`, excel).then( () => {
-            self.open();
+          Util.ReadWriteFilesDevice(`CP 3001 - Relatório Mensal Detalhado`, `Relatório Mensal Detalhado.csv`, excel).then( (result) => {
+            if (result == 'WRITE') {
+              self.open();
+            }
           })
         }
         self.closeGerarExcelLista();

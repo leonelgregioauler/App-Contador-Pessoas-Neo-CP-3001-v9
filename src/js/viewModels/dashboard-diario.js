@@ -130,8 +130,8 @@ define(['knockout',
                 return a.h - b.h;
               })
             
-              historicOfficeHourMorning = orderData.slice(itemControl.horaInicioTurno1, itemControl.horaFimTurno1 + 1);
-              historicOfficeHourAfternoon = orderData.slice(itemControl.horaInicioTurno2, itemControl.horaFimTurno2 + 1);
+              historicOfficeHourMorning = orderData.slice(itemControl.horaInicioTurno1, (itemControl.horaFimTurno1 < hour) ? itemControl.horaFimTurno1 + 1: hour + 1);
+              historicOfficeHourAfternoon = orderData.slice(itemControl.horaInicioTurno2, (itemControl.horaFimTurno2 < hour) ? itemControl.horaFimTurno2 + 1 : hour + 1);
             
               const detailsMorning = historicOfficeHourMorning.map((item) => {
                 return {

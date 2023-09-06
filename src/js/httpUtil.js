@@ -23,55 +23,61 @@ define(['axios'],
     ReadWriteFilesDevice = async (folderName, fileName, BlobData) => {
       // Diretório de Documentos
       const DIR_ENTRY = cordova.file.externalRootDirectory;
-      
-      window.resolveLocalFileSystemURL(DIR_ENTRY, function (dirEntry) {
-        createDirectory(dirEntry);
-      }, onErrorLoadFs);
 
-      function createDirectory(rootDirEntry) {
-        rootDirEntry.getDirectory('Documents', { create: true }, function (dirEntry) {
-          dirEntry.getDirectory(folderName, { create: true }, function (subDirEntry) {
-
-            createFile(subDirEntry, fileName);
-
+      return new Promise ( (resolve, reject) => {
+        
+        window.resolveLocalFileSystemURL(DIR_ENTRY, function (dirEntry) {
+          createDirectory(dirEntry);
+        }, onErrorLoadFs);
+        
+        function createDirectory(rootDirEntry) {
+          rootDirEntry.getDirectory('Documents', { create: true }, function (dirEntry) {
+            dirEntry.getDirectory(folderName, { create: true }, function (subDirEntry) {
+            
+              createFile(subDirEntry, fileName);
+            
+            }, onErrorGetDir);
           }, onErrorGetDir);
-        }, onErrorGetDir);
-      }
-
-      function createFile(dirEntry, fileName) {
-        dirEntry.getFile(fileName, { create: true, exclusive: false }, function (fileEntry) {
-
-          writeFile(fileEntry, BlobData);
-
-        }, onErrorCreateFile);
-      }
-
-      function writeFile(fileEntry, dataObj) {
-        fileEntry.createWriter(function (fileWriter) {
-
-          fileWriter.onwriteend = function () {
-            console.log("Successful file write...");
-          };
-
-          fileWriter.onerror = function (e) {
-            console.log("Failed file write: " + e.toString());
-          };
-
-          fileWriter.write(dataObj);
-        });
-      }
-
-      function onErrorLoadFs(onErrorLoadFs) {
-        console.log('onErrorLoadFs: ' + onErrorLoadFs);
-      }
-
-      function onErrorGetDir(onErrorGetDir) {
-        console.log('onErrorGetDir ' + onErrorGetDir);
-      }
+        }
       
-      function onErrorCreateFile(onErrorCreateFile) {
-        console.log('onErrorCreateFile ' + onErrorCreateFile)
-      }      
+        function createFile(dirEntry, fileName) {
+          dirEntry.getFile(fileName, { create: true, exclusive: false }, function (fileEntry) {
+
+            writeFile(fileEntry, BlobData);
+
+          }, onErrorCreateFile);
+        }
+        
+        function writeFile(fileEntry, dataObj) {
+          fileEntry.createWriter(function (fileWriter) {
+            
+            fileWriter.onwriteend = function () {
+              console.log("Successful file write...");
+              resolve('WRITE');
+            };
+            
+            fileWriter.onerror = function (e) {
+              console.log("Failed file write: " + e.toString());
+              reject(e.toString());
+            };
+            
+            fileWriter.write(dataObj);
+          });
+        }
+      
+
+        function onErrorLoadFs(onErrorLoadFs) {
+          console.log('onErrorLoadFs: ' + onErrorLoadFs);
+        }
+
+        function onErrorGetDir(onErrorGetDir) {
+          console.log('onErrorGetDir ' + onErrorGetDir);
+        }
+        
+        function onErrorCreateFile(onErrorCreateFile) {
+          console.log('onErrorCreateFile ' + onErrorCreateFile)
+        } 
+      })     
     }
 
     return {
