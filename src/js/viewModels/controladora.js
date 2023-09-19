@@ -49,7 +49,7 @@ define([
     });
     const year = date.getFullYear();
     
-    const appVersion = `Neo CP 3001 - v 20230412.1`;
+    const appVersion = `Neo CP 3001 - v 2023.0912.1`;
     
     self.appVersion = ko.observable(appVersion);
 
@@ -309,8 +309,8 @@ define([
     networkinterface.getWiFiIPAddress(onSuccess, onError);
     
     self.connected = function () {
-      accUtils.announce("About page loaded.", "assertive");
-      document.title = "About";
+      accUtils.announce("Controladora page loaded.", "assertive");
+      document.title = "Controladora";
       //DataBase.dropDataBase();
       DataBase.createDataBase();
       self.queryController();

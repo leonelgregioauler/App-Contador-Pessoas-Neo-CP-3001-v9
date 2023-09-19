@@ -142,7 +142,7 @@ define(['knockout',
                   value: parseInt(item.v)
                 }
               });
-              
+
               const detailsAfternoon = historicOfficeHourAfternoon.map((item) => {
                 return {
                   id: item.h,
@@ -152,8 +152,10 @@ define(['knockout',
                   value: parseInt(item.v)
                 }
               });
-              
+
               const detailsMorningAfternoon = [...detailsMorning, ...detailsAfternoon];
+
+              self.total.avgDay(`Visitas/Hora: ${parseInt(self.total.totalActual() / detailsMorningAfternoon.length)}`);
               
               self.dataSourceDataHour[0].histHour.data = detailsMorningAfternoon;
               
@@ -222,8 +224,8 @@ define(['knockout',
       }
       
       self.connected = function() {
-        accUtils.announce('Dashboard page loaded.');
-        document.title = "Dashboard";
+        accUtils.announce('Dashboard Diário page loaded.');
+        document.title = "Dashboard Diário";
 
         window.addEventListener('orientationchange', self.identifyScreenSize);
 
